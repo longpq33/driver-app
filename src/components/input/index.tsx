@@ -8,6 +8,7 @@ interface InputProps {
   keyboardType?: "default" | "email-address" | "numeric" | "phone-pad" | "number-pad" | "decimal-pad";
   autoCapitalize?: "none" | "sentences" | "words" | "characters";
   [key: string]: any; // Allow additional props
+  value?: string;
 }
 
 function Input({
@@ -16,6 +17,7 @@ function Input({
   onChangeText,
   keyboardType,
   autoCapitalize = "none",
+  value,
 }: InputProps) {
   return (
     <View style={styles.container}>
@@ -26,6 +28,7 @@ function Input({
         onChangeText={onChangeText} 
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize}
+        value={value}
       />
     </View>
   );

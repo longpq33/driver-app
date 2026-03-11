@@ -21,5 +21,18 @@ export const styles = StyleSheet.create({
   inputContainer: {
     width: '100%',
     marginBottom: 20,
-  }
+  },
+  buttonContainer: {
+    width: '100%',
+    marginTop: 10,
+  },
+  loader: {
+    marginTop: 10,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    width: '100%',
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
 });

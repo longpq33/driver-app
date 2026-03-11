@@ -1,19 +1,51 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet } from 'react-native';
+import { COLORS } from '../../../themes/colors';
 
 export const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#fff",
     flex: 1,
-    alignItems: 'center',
+    backgroundColor: COLORS.primary,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    padding: 20,
     justifyContent: 'center',
-    padding: 16,
   },
   title: {
-    fontSize: 24,
-    marginBottom: 16,
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 8,
+    color: '#333',
+  },
+  subtitle: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 32,
+    color: '#666',
+  },
+  formContainer: {
+    width: '100%',
   },
   inputContainer: {
-    width: '100%',
     marginBottom: 16,
-  }
+  },
+  buttonContainer: {
+    marginTop: 24,
+    width: '100%',
+  },
+  footerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 24,
+  },
+  footerText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  linkText: {
+    fontSize: 14,
+    color: '#007AFF',
+    fontWeight: '600',
+  },
 });
