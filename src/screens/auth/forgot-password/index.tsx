@@ -10,15 +10,17 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { styles } from './styles';
-import Input from '../../../components/input';
-import Button from '../../../components/button';
+import Input from '@/components/input';
+import Button from '@/components/button';
 import {
   useForgotPassword,
   useVerifyOtp,
   useResetPassword,
-} from '../../../hooks/useAuth';
-import { useNavigation } from '@react-navigation/native';
+} from '@/hooks/useAuth';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { STORAGE_KEYS } from '@/constants';
+import { storage } from '@/hooks/useAuth';
 
 type AuthStackParamList = {
   SignIn: undefined;
@@ -89,6 +91,12 @@ function ForgotPasswordScreen() {
       {
         onSuccess: (data) => {
           if (data.valid) {
+            // Save tokens if available
+            if (data.data) {
+              storage.set(STORAGE_KEYS.ACCESS_TOKEN, data.data.accessToken);
+              storage.set(STORAGE_KEYS.REFRESH_TOKEN, data.data.refreshToken);
+              storage.set(STORAGE_KEYS.USER, JSON.stringify(data.data.user));
+            }
             setStep('newPassword');
           } else {
             Alert.alert('Error', 'Invalid OTP code. Please try again.');
@@ -132,7 +140,12 @@ function ForgotPasswordScreen() {
               {
                 text: 'OK',
                 onPress: () => {
-                  navigation.navigate('SignIn');
+                  navigation.dispatch(
+                    CommonActions.reset({
+                      index: 0,
+                      routes: [{ name: 'SignIn' }],
+                    })
+                  );
                 },
               },
             ]
@@ -150,7 +163,12 @@ function ForgotPasswordScreen() {
   };
 
   const handleGoToSignIn = () => {
-    navigation.navigate('SignIn');
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: 'SignIn' }],
+      })
+    );
   };
 
   const isLoading =

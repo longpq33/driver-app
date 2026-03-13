@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { COLORS } from '../../../themes/colors';
+import { COLORS } from '@/themes/colors';
 
 export const styles = StyleSheet.create({
   container: {
@@ -9,20 +9,22 @@ export const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     padding: 20,
-    justifyContent: 'center',
+    alignItems: 'center',
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 8,
-    color: '#333',
+    marginTop: 40,
+    color: '#fff',
   },
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
-    marginBottom: 32,
-    color: '#666',
+    marginBottom: 24,
+    color: '#fff',
+    opacity: 0.9,
   },
   formContainer: {
     width: '100%',
@@ -34,6 +36,9 @@ export const styles = StyleSheet.create({
     marginTop: 24,
     width: '100%',
   },
+  loader: {
+    marginTop: 10,
+  },
   footerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -41,11 +46,12 @@ export const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 14,
-    color: '#666',
+    color: '#fff',
   },
   linkText: {
     fontSize: 14,
-    color: '#007AFF',
+    color: '#fff',
     fontWeight: '600',
+    textDecorationLine: 'underline',
   },
 });

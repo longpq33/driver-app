@@ -1,5 +1,7 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { STORAGE_KEYS } from '../config/constants';
+import { createMMKV } from 'react-native-mmkv';
+import { STORAGE_KEYS } from '@/constants';
+
+const storage = createMMKV();
 
 // Event emitter đơn giản để notify auth changes
 type AuthChangeListener = (isLoggedIn: boolean) => void;
@@ -25,10 +27,10 @@ export const authStorage = {
   /**
    * Lưu access token và refresh token
    */
-  setTokens: async (accessToken: string, refreshToken: string): Promise<void> => {
+  setTokens: (accessToken: string, refreshToken: string): void => {
     try {
-      await AsyncStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-      await AsyncStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+      storage.set(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+      storage.set(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
       notifyAuthChange(true);
     } catch (error) {
       console.warn('Failed to save tokens:', error);
@@ -39,9 +41,9 @@ export const authStorage = {
   /**
    * Lưu access token
    */
-  setAccessToken: async (accessToken: string): Promise<void> => {
+  setAccessToken: (accessToken: string): void => {
     try {
-      await AsyncStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+      storage.set(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
       notifyAuthChange(true);
     } catch (error) {
       console.warn('Failed to save access token:', error);
@@ -52,9 +54,9 @@ export const authStorage = {
   /**
    * Lấy access token
    */
-  getAccessToken: async (): Promise<string | null> => {
+  getAccessToken: (): string | null => {
     try {
-      return await AsyncStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+      return storage.getString(STORAGE_KEYS.ACCESS_TOKEN) ?? null;
     } catch (error) {
       console.warn('Failed to get access token:', error);
       return null;
@@ -64,9 +66,9 @@ export const authStorage = {
   /**
    * Lấy refresh token
    */
-  getRefreshToken: async (): Promise<string | null> => {
+  getRefreshToken: (): string | null => {
     try {
-      return await AsyncStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+      return storage.getString(STORAGE_KEYS.REFRESH_TOKEN) ?? null;
     } catch (error) {
       console.warn('Failed to get refresh token:', error);
       return null;
@@ -76,9 +78,9 @@ export const authStorage = {
   /**
    * Kiểm tra đã đăng nhập chưa
    */
-  isAuthenticated: async (): Promise<boolean> => {
+  isAuthenticated: (): boolean => {
     try {
-      const accessToken = await AsyncStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+      const accessToken = storage.getString(STORAGE_KEYS.ACCESS_TOKEN);
       return !!accessToken;
     } catch (error) {
       console.warn('Failed to check auth:', error);
@@ -89,12 +91,10 @@ export const authStorage = {
   /**
    * Xóa tất cả tokens
    */
-  clearTokens: async (): Promise<void> => {
+  clearTokens: (): void => {
     try {
-      await AsyncStorage.multiRemove([
-        STORAGE_KEYS.ACCESS_TOKEN,
-        STORAGE_KEYS.REFRESH_TOKEN,
-      ]);
+      storage.remove(STORAGE_KEYS.ACCESS_TOKEN);
+      storage.remove(STORAGE_KEYS.REFRESH_TOKEN);
       notifyAuthChange(false);
     } catch (error) {
       console.warn('Failed to clear tokens:', error);
@@ -105,9 +105,9 @@ export const authStorage = {
   /**
    * Lưu user info
    */
-  setUser: async (user: object): Promise<void> => {
+  setUser: (user: object): void => {
     try {
-      await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+      storage.set(STORAGE_KEYS.USER, JSON.stringify(user));
     } catch (error) {
       console.warn('Failed to save user:', error);
       throw error;
@@ -117,9 +117,9 @@ export const authStorage = {
   /**
    * Lấy user info
    */
-  getUser: async (): Promise<object | null> => {
+  getUser: (): object | null => {
     try {
-      const userJson = await AsyncStorage.getItem(STORAGE_KEYS.USER);
+      const userJson = storage.getString(STORAGE_KEYS.USER);
       return userJson ? JSON.parse(userJson) : null;
     } catch (error) {
       console.warn('Failed to get user:', error);
@@ -130,9 +130,9 @@ export const authStorage = {
   /**
    * Xóa user info
    */
-  clearUser: async (): Promise<void> => {
+  clearUser: (): void => {
     try {
-      await AsyncStorage.removeItem(STORAGE_KEYS.USER);
+      storage.remove(STORAGE_KEYS.USER);
     } catch (error) {
       console.warn('Failed to clear user:', error);
       throw error;
@@ -142,13 +142,11 @@ export const authStorage = {
   /**
    * Xóa tất cả auth data (tokens + user)
    */
-  clearAll: async (): Promise<void> => {
+  clearAll: (): void => {
     try {
-      await AsyncStorage.multiRemove([
-        STORAGE_KEYS.ACCESS_TOKEN,
-        STORAGE_KEYS.REFRESH_TOKEN,
-        STORAGE_KEYS.USER,
-      ]);
+      storage.remove(STORAGE_KEYS.ACCESS_TOKEN);
+      storage.remove(STORAGE_KEYS.REFRESH_TOKEN);
+      storage.remove(STORAGE_KEYS.USER);
       notifyAuthChange(false);
     } catch (error) {
       console.warn('Failed to clear all auth data:', error);

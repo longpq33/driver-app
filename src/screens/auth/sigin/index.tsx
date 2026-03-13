@@ -9,64 +9,68 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
-import { styles } from './styles';
-import Input from '../../../components/input';
-import Button from '../../../components/button';
-import { useLogin } from '../../../hooks/useAuth';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
-type AuthStackParamList = {
-  Sigin: undefined;
-  Register: undefined;
-  ForgotPassword: undefined;
-};
+import auth from '@react-native-firebase/auth';
+import { styles } from './styles';
+import Input from '@/components/input';
+import Button from '@/components/button';
+import { useOtpStore } from '@/store/otpStore';
+import { sendOtpSchema, SendOtpInput } from '@/types/auth';
+import { COLORS } from '@/themes/colors';
+import { AuthStackParamList } from '@/navigation/auth-navigation';
 
 type SiginScreenNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,
-  'Sigin'
+  'SignIn'
 >;
 
 function SiginScreen() {
   const navigation = useNavigation<SiginScreenNavigationProp>();
-  const [phone, setPhone] = useState('0987654321');
-  const [password, setPassword] = useState('password123');
-  const loginMutation = useLogin();
+  const setConfirmation = useOtpStore((state) => state.setConfirmation);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignIn = () => {
-    if (!phone || !password) {
-      Alert.alert('Error', 'Please enter phone and password');
-      return;
-    }
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SendOtpInput>({
+    resolver: zodResolver(sendOtpSchema),
+    defaultValues: {
+      phone: '',
+    },
+  });
 
-    loginMutation.mutate(
-      { phone, password },
-      {
-        onSuccess: () => {
-          // Navigate to Main screen
-          const parentNavigation = navigation.getParent();
-          if (parentNavigation) {
-            parentNavigation.navigate('Main');
-          }
-        },
-        onError: (error: any) => {
-          console.log('Login failed VIEW', error);
-          const errorMessage =
-            error?.response?.data?.message ||
-            error?.message ||
-            'Login failed. Please try again.';
-          Alert.alert('Login Failed 111', errorMessage);
-        },
+  const onSubmit = async (data: SendOtpInput) => {
+    setIsLoading(true);
+    try {
+      // Format phone with country code
+      let formattedPhone = data.phone;
+      if (!data.phone.startsWith('+')) {
+        formattedPhone = '+84' + data.phone.replace(/^0/, '');
       }
-    );
+
+      // Send OTP via Firebase
+      const confirmationResult = await auth().signInWithPhoneNumber(formattedPhone);
+
+      // Save confirmation to store
+      setConfirmation(confirmationResult, data.phone, 'login');
+
+      // Navigate to OTP screen
+      navigation.navigate('OtpInput', { phone: data.phone, type: 'login' });
+    } catch (err: any) {
+      console.log('Send OTP error:', err);
+      const errorMessage = err?.message || 'Failed to send OTP. Please try again.';
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleRegister = () => {
     navigation.navigate('Register');
-  };
-
-  const handleForgotPassword = () => {
-    navigation.navigate('ForgotPassword');
   };
 
   return (
@@ -78,54 +82,54 @@ function SiginScreen() {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.title}>Driver Food</Text>
+        <Text style={styles.title}>NeedNow Driver</Text>
+        <Text style={styles.subtitle}>Sign in to continue</Text>
 
         <View style={styles.contentContainer}>
+          {/* Phone Input */}
           <View style={styles.inputContainer}>
-            <Input
-              label="Phone"
-              placeholder="Enter your phone"
-              value={phone}
-              onChangeText={setPhone}
-              keyboardType="phone-pad"
-              autoCapitalize="none"
+            <Controller
+              control={control}
+              name="phone"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  label="Phone Number"
+                  placeholder="Enter your phone number"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  keyboardType="phone-pad"
+                  error={errors.phone?.message}
+                />
+              )}
             />
           </View>
 
-          <View style={styles.inputContainer}>
-            <Input
-              label="Password"
-              placeholder="Enter your password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              autoCapitalize="none"
+          {/* Send OTP Button */}
+          <View style={styles.buttonContainer}>
+            <Button
+              title={isLoading ? 'Sending OTP...' : 'Send OTP'}
+              onPress={handleSubmit(onSubmit)}
+              disabled={isLoading}
             />
+            {isLoading && (
+              <ActivityIndicator
+                style={styles.loader}
+                size="small"
+                color={COLORS.primary}
+              />
+            )}
           </View>
         </View>
-        <View>
+
+        {/* Links */}
+        <View style={styles.linkContainer}>
           <TouchableOpacity onPress={handleRegister}>
-            <Text>Register</Text>
+            <Text style={styles.linkText}>
+              Don't have an account?{' '}
+              <Text style={styles.linkTextBold}>Register</Text>
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleForgotPassword}>
-            <Text>Forgot Password?</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.buttonContainer}>
-          <Button
-            title={loginMutation.isPending ? 'Signing in...' : 'Sign in'}
-            onPress={handleSignIn}
-            disabled={loginMutation.isPending}
-          />
-
-          {loginMutation.isPending && (
-            <ActivityIndicator
-              style={styles.loader}
-              size="small"
-              color="#fff"
-            />
-          )}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

@@ -1,8 +1,9 @@
 import { StyleSheet } from 'react-native';
+import { COLORS } from '@/themes/colors';
 
 export const styles = StyleSheet.create({
   buttonContainer: {
-    backgroundColor: '#000',
+    backgroundColor: '#fff',
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
@@ -10,12 +11,12 @@ export const styles = StyleSheet.create({
     minHeight: 50,
   },
   buttonText: {
-    color: '#fff',
+    color: COLORS.primary,
     fontSize: 16,
     fontWeight: '600',
   },
   buttonDisabled: {
-    backgroundColor: '#999',
+    backgroundColor: '#ccc',
     opacity: 0.7,
   },
 });

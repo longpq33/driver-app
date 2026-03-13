@@ -4,8 +4,8 @@ import axios, {
   AxiosResponse,
   AxiosError,
 } from 'axios';
-import { API_BASE_URL, API_TIMEOUT, STORAGE_KEYS } from './constants';
-import { storage } from '../hooks/useAuth';
+import { API_BASE_URL, API_TIMEOUT, STORAGE_KEYS } from '@/constants';
+import { storage } from '@/hooks/useAuth';
 
 // Tạo axios instance
 const axiosClient: AxiosInstance = axios.create({
@@ -34,12 +34,37 @@ const processQueue = (error: AxiosError | null, token: string | null = null) => 
   failedQueue = [];
 };
 
-// Request interceptor - Thêm token vào headers
+// Danh sách các endpoint không cần token (auth endpoints)
+const NO_TOKEN_ENDPOINTS = [
+  '/api/auth/login',
+  '/api/auth/login-with-otp',
+  '/api/auth/login-with-firebase',
+  '/api/auth/register',
+  '/api/auth/register-with-otp',
+  '/api/auth/register-with-firebase',
+  '/api/auth/refresh',
+  '/api/auth/forgot-password',
+  '/api/auth/verify-otp',
+  '/api/auth/reset-password',
+  '/api/auth/send-login-otp',
+  '/api/auth/send-register-otp',
+  '/api/auth/resend-otp',
+  '/api/auth/check-existence',
+];
+
+// Request interceptor - Thêm token vào headers (trừ auth endpoints)
 axiosClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
-    const token = await storage.getString(STORAGE_KEYS.ACCESS_TOKEN);
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Skip token cho các endpoint auth
+    const isAuthEndpoint = NO_TOKEN_ENDPOINTS.some(endpoint =>
+      config.url?.includes(endpoint)
+    );
+
+    if (!isAuthEndpoint) {
+      const token = await storage.getString(STORAGE_KEYS.ACCESS_TOKEN);
+      if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
